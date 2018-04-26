@@ -1,7 +1,7 @@
 $gitversion = (gitversion|convertfrom-json)
 
 $currentVersion = "v$($gitversion.SemVer.Trim())"
-$preRelease = $($gitversion.PreReleaseTag) -eq "unstable"
+$preRelease = ($gitversion.PreReleaseLabel) -eq "unstable"
 
 if (((git tag -l $currentVersion) -eq $null) -eq $false ) {
     Write-Host "Current version already set at $currentVersion" -ForegroundColor Yellow
