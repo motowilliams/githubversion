@@ -10,6 +10,7 @@ else {
     Write-Host "Setting version tag to $currentVersion" -ForegroundColor Green
     git tag $currentVersion
     git push origin $currentVersion
+    git push origin head
     git log -1    
 }
 
