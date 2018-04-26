@@ -4,7 +4,7 @@ $currentVersion = "v$($gitversion.SemVer.Trim())"
 $preRelease = ($gitversion.PreReleaseLabel) -eq "unstable"
 
 if (((git tag -l $currentVersion) -eq $null) -eq $false ) {
-    Write-Host "Current version already set at $currentVersion" -ForegroundColor Yellow
+    Write-Host "Current commit already tagged with $currentVersion" -ForegroundColor Yellow
 }
 else {
     Write-Host "Setting version tag to $currentVersion" -ForegroundColor Green
@@ -41,15 +41,17 @@ function Get-BooleanValue {
     return $flag
 }
 
-$response = Get-BooleanValue -Title "Create Release" -Message "Release $($currentVersion) not found, create now?" -Default $false
+$releaseLabel = if ($preRelease -eq $true) { "Pre-Release" } else { "Release" }
+
+$response = Get-BooleanValue -Title "Create $releaseLabel" -Message "$releaseLabel $($currentVersion) not found, create now?" -Default $false
 
 if ($response -eq $true) {
     if ($preRelease -eq $true) {
-        Write-Host "Creating $currentVersion pre-release in GitHub"
+        Write-Host "Creating $currentVersion $releaseLabel in GitHub"
         Start-Process -FilePath hub -Args @("release", "create", "-p", "-m", $currentVersion, $currentVersion) -NoNewWindow -Wait
     }
     else {
-        Write-Host "Creating $currentVersion release in GitHub"
+        Write-Host "Creating $currentVersion $releaseLabel in GitHub"
         Start-Process -FilePath hub -Args @("release", "create", "-m", $currentVersion, $currentVersion) -NoNewWindow -Wait
     }
 }
