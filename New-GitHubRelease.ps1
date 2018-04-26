@@ -45,11 +45,11 @@ $response = Get-BooleanValue -Title "Create Release" -Message "Release $($curren
 
 if ($response -eq $true) {
     if ($preRelease -eq $true) {
-        Write-Host "Creating $currentRelease pre-release in GitHub"
-        Start-Process -FilePath hub -Args @("release", "create", "-p", "-m", $currentRelease, $currentRelease) -NoNewWindow -Wait
+        Write-Host "Creating $currentVersion pre-release in GitHub"
+        Start-Process -FilePath hub -Args @("release", "create", "-p", "-m", $currentVersion, $currentVersion) -NoNewWindow -Wait
     }
     else {
-        Write-Host "Creating $currentRelease release in GitHub"
-        Start-Process -FilePath hub -Args @("release", "create", "-m", $currentRelease, $currentRelease) -NoNewWindow -Wait
+        Write-Host "Creating $currentVersion release in GitHub"
+        Start-Process -FilePath hub -Args @("release", "create", "-m", $currentVersion, $currentVersion) -NoNewWindow -Wait
     }
 }
