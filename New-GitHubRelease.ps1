@@ -1,6 +1,7 @@
 $gitversion = (gitversion|convertfrom-json)
 
 $currentVersion = "v$($gitversion.SemVer.Trim())"
+$preRelease = $($gitversion.PreReleaseTag) -eq "unstable"
 
 if (((git tag -l $currentVersion) -eq $null) -eq $false ) {
     Write-Host "Current version already set at $currentVersion" -ForegroundColor Yellow
@@ -43,5 +44,12 @@ function Get-BooleanValue {
 $response = Get-BooleanValue -Title "Create Release" -Message "Release $($currentVersion) not found, create now?" -Default $false
 
 if ($response -eq $true) {
-    Write-Host "Creating $currentRelease release in GitHub"
+    if ($preRelease -eq $true) {
+        Write-Host "Creating $currentRelease pre-release in GitHub"
+        Start-Process -FilePath hub -Args @("release", "create", "-p", "-m", $currentRelease, $currentRelease) -NoNewWindow -Wait
+    }
+    else {
+        Write-Host "Creating $currentRelease release in GitHub"
+        Start-Process -FilePath hub -Args @("release", "create", "-m", $currentRelease, $currentRelease) -NoNewWindow -Wait
+    }
 }
