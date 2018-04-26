@@ -9,6 +9,7 @@ if (((git tag -l $currentVersion) -eq $null) -eq $false ) {
 else {
     Write-Host "Setting version tag to $currentVersion" -ForegroundColor Green
     git tag $currentVersion
+    git push origin $currentVersion
     git log -1    
 }
 
