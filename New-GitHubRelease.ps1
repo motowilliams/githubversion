@@ -22,7 +22,7 @@ function New-GitHubRelease {
     
         $gitversion = (gitversion|convertfrom-json)
 
-        $currentVersion = "v$($gitversion.SemVer.Trim())"
+        $currentVersion = "$($gitversion.SemVer.Trim())"
         $preRelease = [string]::IsNullOrEmpty(((gitversion|convertfrom-json).PreReleaseLabel).Trim()) -eq $false
 
         $unpushedCommits = (git branch -r --contains $gitversion.Sha) -eq $null
