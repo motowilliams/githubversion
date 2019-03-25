@@ -1,3 +1,5 @@
+#requires -modules Get-GitVersion
+
 function Get-BooleanValue {
     [CmdletBinding()]
     param(
@@ -15,12 +17,56 @@ function Get-BooleanValue {
     return $flag
 }
 
+function HasParentDirectory {
+    [CmdletBinding()]
+    param (
+        [string]$TargetDirectory,
+        [string]$DirectoryName
+    )
+
+    $rootDrive = "$((Get-Location).Drive):\"
+
+    if ((Test-Path $TargetDirectory) -eq $false) {
+        Write-Verbose -Message "Directory $($TargetDirectory) does not exist"
+        return;
+    }
+
+    Write-Verbose -Message "Checking if directory $($TargetDirectory) is root $rootDrive"
+    if ($TargetDirectory -eq $rootDrive) {
+        Write-Verbose -Message "Target is root"
+        return $false
+    }
+
+    Write-Verbose -Message "Directory $($TargetDirectory) exists"
+    Write-Verbose -Message "Searching $($TargetDirectory) for $($DirectoryName)"
+
+    $testPath = $(Join-Path $TargetDirectory $DirectoryName)
+    if ((Test-Path -Path $testPath) -eq $true) {
+        Write-Verbose -Message "$testPath directory found"
+        return $true
+    }
+    Write-Verbose -Message "$testPath directory not found"
+
+    $parent = $(Split-Path $TargetDirectory -Parent)
+    Write-Verbose -Message "Searching parent $parent"
+    HasParentDirectory -TargetDirectory $(Split-Path $TargetDirectory -Parent) -DirectoryName $DirectoryName
+
+}
+
 function New-GitHubRelease {
     [CmdletBinding()]
-    param ()
-    process {
+    param (
+        [switch]$version
+    )
     
-        $gitversion = (gitversion|convertfrom-json)
+    process {
+  
+        if ((HasParentDirectory -TargetDirectory $(Get-Location) -DirectoryName ".git") -eq $false) {
+            Write-Host "No git repo found in current or parent directories"
+            return
+        }
+
+        $gitversion = Get-GitVersion
 
         $currentVersion = "$($gitversion.SemVer.Trim())"
         $preRelease = [string]::IsNullOrEmpty(((gitversion|convertfrom-json).PreReleaseLabel).Trim()) -eq $false
@@ -38,7 +84,7 @@ function New-GitHubRelease {
 
             Write-Host "Setting upstream (git push -u origin head)" -ForegroundColor Green
             git push -u origin head
-            Write-Host "Pushign commits (git push origin head)" -ForegroundColor Green
+            Write-Host "Pushing commits (git push origin head)" -ForegroundColor Green
             git push origin head
         }
 
@@ -93,3 +139,6 @@ function New-GitHubRelease {
 }
 
 Set-Alias -Name ghr -Value New-GitHubRelease
+
+Export-ModuleMember -Function New-GitHubRelease
+Export-ModuleMember -Alias ghr
